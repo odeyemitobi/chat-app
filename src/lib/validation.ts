@@ -11,6 +11,32 @@ export const validateUsername = (username: string): boolean => {
   );
 };
 
+export const validateEmail = (email: string): boolean => {
+  // Email validation rules
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  
+  return (
+    email.trim().length > 0 && 
+    email.length <= 100 &&
+    emailRegex.test(email)
+  );
+};
+
+export const validatePassword = (password: string): boolean => {
+  // Password validation rules
+  const minLength = 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+
+  return (
+    password.length >= minLength &&
+    hasUppercase &&
+    hasLowercase &&
+    hasNumber
+  );
+};
+
 export const validateMessage = (message: string): boolean => {
   // Message validation rules
   const minLength = 1;

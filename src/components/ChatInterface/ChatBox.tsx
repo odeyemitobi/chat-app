@@ -5,16 +5,17 @@ import { Message, User, MessageType } from "@/types/chat";
 import { useChatScroll } from "@/hooks/useChatScroll";
 import { validateMessage } from "@/lib/validation";
 import { formatTimestamp } from "@/lib/formatters";
-import { FaPaperPlane, FaSmile } from "react-icons/fa";
+import { FaPaperPlane, FaSmile, FaSignOutAlt } from "react-icons/fa";
 import EmojiPicker from "emoji-picker-react";
 
 interface ChatBoxProps {
   user: User;
   messages: Message[];
   onSendMessage: (content: string, type?: MessageType) => void;
+  onLogout: () => void;
 }
 
-const ChatBox: React.FC<ChatBoxProps> = ({ user, messages, onSendMessage }) => {
+const ChatBox: React.FC<ChatBoxProps> = ({ user, messages, onSendMessage, onLogout }) => {
   const [message, setMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useChatScroll(messages);
@@ -81,6 +82,13 @@ const ChatBox: React.FC<ChatBoxProps> = ({ user, messages, onSendMessage }) => {
           className="p-2 bg-blue-500 text-white rounded-r hover:bg-blue-600"
         >
           <FaPaperPlane />
+        </button>
+        <button
+          title="Logout"
+          onClick={onLogout}
+          className="p-2 bg-red-500 text-white rounded-r hover:bg-red-600 ml-2"
+        >
+          <FaSignOutAlt />
         </button>
       </div>
 

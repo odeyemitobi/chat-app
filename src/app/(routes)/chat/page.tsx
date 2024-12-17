@@ -5,22 +5,19 @@ import { useAuth } from '@/context/AuthContext';
 import ChatBox from '@/components/ChatInterface/ChatBox';
 import { Message, MessageType } from '@/types/chat';
 import { socketService } from '@/lib/socket';
+import { useRouter } from 'next/navigation';
 
 export default function ChatPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
-    // Initialize socket connection
     socketService.connect('http://localhost:3000');
-
-    // Listen for incoming messages
     socketService.onMessage('chat_message', (data: unknown) => {
       const newMessage = data as Message;
       setMessages(prevMessages => [...prevMessages, newMessage]);
     });
-
-    // Cleanup on component unmount
     return () => {
       socketService.disconnect();
     };
@@ -35,12 +32,17 @@ export default function ChatPage() {
         user,
         createdAt: new Date()
       };
-
-      // Send message via socket
       socketService.sendMessage('send_message', newMessage);
-
-      // Optimistically add message to local state
       setMessages(prevMessages => [...prevMessages, newMessage]);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/');
+    } catch (error) {
+      console.error('Error logging out:', error);
     }
   };
 
@@ -53,7 +55,8 @@ export default function ChatPage() {
       <ChatBox 
         user={user} 
         messages={messages} 
-        onSendMessage={handleSendMessage} 
+        onSendMessage={handleSendMessage}
+        onLogout={handleLogout}
       />
     </div>
   );
