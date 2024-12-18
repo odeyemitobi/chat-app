@@ -1,21 +1,24 @@
-"use client";
+'use client';
 
-import React, { createContext, useState, useContext, ReactNode } from "react";
+import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { User } from "@/types/chat";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
-import {
-  validateUsername,
-  validateEmail,
+import { UserStorage } from "@/lib/userStorage";
+import { 
+  validateUsername, 
+  validateEmail, 
   validatePassword,
+  hashPassword 
 } from "@/lib/validation";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
-interface EnhancedUser extends User {
+interface StoredUser extends User {
   hashedPassword: string;
+  createdAt: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, email: string, password: string) => boolean;
+  login: (identifier: string, password: string) => boolean;
   register: (username: string, email: string, password: string) => boolean;
   logout: () => void;
 }
@@ -27,65 +30,30 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {},
 });
 
-const hashPassword = (password: string): string => {
-  let hash = 0;
-  for (let i = 0; i < password.length; i++) {
-    const char = password.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash).toString();
-};
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [, setStoredUser] = useLocalStorage<User | null>("currentUser", null);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
-  const [storedUser, setStoredUser] = useLocalStorage<EnhancedUser | null>(
-    "chatUser",
-    null
-  );
-  const [user, setUser] = useState<User | null>(storedUser);
-
-  const login = (
-    username: string,
-    email: string,
-    password: string
-  ): boolean => {
-    // Validate input
-    const isValidInput =
-      (validateUsername(username) || validateEmail(email)) &&
-      validatePassword(password);
-
-    if (!isValidInput) {
-      return false;
+  // Check for existing logged-in user on mount
+  useEffect(() => {
+    const storedCurrentUser = localStorage.getItem("currentUser");
+    if (storedCurrentUser) {
+      setUser(JSON.parse(storedCurrentUser));
     }
+  }, []);
 
-    // Try to retrieve user from localStorage directly
-    const storedUserItem = localStorage.getItem('chatUser');
-    const storedUser: EnhancedUser | null = storedUserItem 
-      ? JSON.parse(storedUserItem) 
-      : null;
+  const login = (identifier: string, password: string): boolean => {
+    const hashedPassword = hashPassword(password);
+    const foundUser = UserStorage.findUser(identifier, hashedPassword);
 
-    // If a user is stored, verify credentials
-    if (storedUser) {
-      const hashedPassword = hashPassword(password);
-      
-      // Check if login credentials match stored user
-      const isEmailMatch = email === storedUser.email;
-      const isUsernameMatch = username === storedUser.username;
-      const isPasswordMatch = hashedPassword === storedUser.hashedPassword;
-
-      if ((isEmailMatch || isUsernameMatch) && isPasswordMatch) {
-        setUser(storedUser);
-        return true;
-      }
-
-      // If credentials don't match, return false
-      return false;
+    if (foundUser) {
+      // Remove sensitive data before setting user
+      const { hashedPassword, ...safeUserData } = foundUser;
+      setUser(safeUserData);
+      setStoredUser(safeUserData);
+      return true;
     }
-
-    // No stored user, so treat this as a registration
-    return register(username, email, password);
+    return false;
   };
 
   const register = (
@@ -93,38 +61,43 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     email: string,
     password: string
   ): boolean => {
-    // Validate registration inputs
-    const isValidRegistration =
-      validateUsername(username) &&
-      validateEmail(email) &&
-      validatePassword(password);
-
-    if (!isValidRegistration) {
-      return false;
-    }
-
-    // Check if a user already exists
-    if (storedUser) {
+    // Validate inputs
+    if (
+      !validateUsername(username) ||
+      !validateEmail(email) ||
+      !validatePassword(password)
+    ) {
       return false;
     }
 
     const hashedPassword = hashPassword(password);
 
-    const newUser: EnhancedUser = {
+    const newUser: StoredUser = {
       id: `user_${Date.now().toString()}`,
       username,
       email,
       hashedPassword,
+      createdAt: new Date().toISOString()
     };
 
-    setUser(newUser);
-    setStoredUser(newUser);
-    return true;
+    // Attempt to add user to storage
+    const userAdded = UserStorage.addUser(newUser);
+    
+    if (userAdded) {
+      // Remove sensitive data before setting user
+      const { hashedPassword, ...safeUserData } = newUser;
+      setUser(safeUserData);
+      setStoredUser(safeUserData);
+      return true;
+    }
+
+    return false;
   };
 
   const logout = () => {
     setUser(null);
     setStoredUser(null);
+    localStorage.removeItem("currentUser");
   };
 
   return (

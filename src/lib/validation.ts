@@ -1,40 +1,28 @@
 export const validateUsername = (username: string): boolean => {
-  // Username validation rules
-  const minLength = 3;
-  const maxLength = 20;
-  const usernameRegex = /^[a-zA-Z0-9_]+$/;
-
-  return (
-    username.length >= minLength &&
-    username.length <= maxLength &&
-    usernameRegex.test(username)
-  );
+  const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+  return usernameRegex.test(username);
 };
 
 export const validateEmail = (email: string): boolean => {
-  // Email validation rules
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  
-  return (
-    email.trim().length > 0 && 
-    email.length <= 100 &&
-    emailRegex.test(email)
-  );
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 };
 
 export const validatePassword = (password: string): boolean => {
-  // Password validation rules
-  const minLength = 8;
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasLowercase = /[a-z]/.test(password);
-  const hasNumber = /[0-9]/.test(password);
+  // At least 8 characters, one uppercase, one lowercase, one number
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+  return passwordRegex.test(password);
+};
 
-  return (
-    password.length >= minLength &&
-    hasUppercase &&
-    hasLowercase &&
-    hasNumber
-  );
+// Improved password hashing (still client-side, so not cryptographically secure)
+export const hashPassword = (password: string): string => {
+  let hash = 0;
+  for (let i = 0; i < password.length; i++) {
+    const char = password.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash).toString(16); // Convert to hex for more variety
 };
 
 export const validateMessage = (message: string): boolean => {

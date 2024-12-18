@@ -1,40 +1,33 @@
 'use client';
 
 import { useAuthPage } from './hooks';
-import { LuLoaderCircle } from "react-icons/lu";
 
 export default function AuthPage() {
   const {
     authMode,
-    username,
-    setUsername,
+    identifier,
     email,
-    setEmail,
+    username,
     password,
-    setPassword,
     error,
+    setIdentifier,
+    setEmail,
+    setUsername,
+    setPassword,
     handleSubmit,
-    toggleAuthMode,
-    storedUser
+    toggleAuthMode
   } = useAuthPage();
-
-  if (storedUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
-        <div className="text-center">
-          <LuLoaderCircle className="mx-auto mb-4 animate-spin text-blue-500" size={48} />
-          <p className="text-xl text-gray-700">Redirecting to chat...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100 p-4">
       <div className="w-full max-w-md bg-white shadow-2xl rounded-2xl overflow-hidden">
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 text-center text-white">
-          <h2 className="text-3xl font-bold">{authMode === 'login' ? 'Welcome Back' : 'Join ChatSpace'}</h2>
-          <p className="text-sm text-blue-100 mt-2">{authMode === 'login' ? 'Log in to your account' : 'Create a new account'}</p>
+          <h2 className="text-3xl font-bold">
+            {authMode === 'login' ? 'Welcome Back' : 'Join Sync'}
+          </h2>
+          <p className="text-sm text-blue-100 mt-2">
+            {authMode === 'login' ? 'Log in to your account' : 'Create a new account'}
+          </p>
         </div>
 
         <div className="p-6 space-y-6">
@@ -75,33 +68,43 @@ export default function AuthPage() {
             </div>
           )}
 
-          {(authMode === 'register' || authMode === 'login') && (
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="text-gray-400"
-                >
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-gray-400"
+              >
+                {authMode === 'register' ? (
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                  <polyline points="22,6 12,13 2,6"></polyline>
-                </svg>
-              </div>
-              <input
-                type="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 text-blue-500 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
-                placeholder="Enter your email"
-                aria-label="Email"
-              />
+                ) : (
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                )}
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
             </div>
-          )}
+            <input
+              type="text"
+              value={authMode === 'register' ? email : identifier}
+              onChange={(e) => 
+                authMode === 'register' 
+                  ? setEmail(e.target.value) 
+                  : setIdentifier(e.target.value)
+              }
+              className="w-full pl-10 pr-4 py-3 text-blue-500 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+              placeholder={
+                authMode === 'register' 
+                  ? "Enter your email" 
+                  : "Username or email"
+              }
+              aria-label={authMode === 'register' ? "Email" : "Username or Email"}
+            />
+          </div>
 
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

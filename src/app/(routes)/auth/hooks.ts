@@ -1,112 +1,60 @@
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
-import {
-  validateUsername,
-  validateEmail,
-  validatePassword,
-} from "@/lib/validation";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 export const useAuthPage = () => {
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
-  const [username, setUsername] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { register, login } = useAuth();
+
+  const { login, register } = useAuth();
   const router = useRouter();
 
-  // Check localStorage for existing user
-  const [storedUser] = useLocalStorage("chatUser", null);
-
-  // If user exists in localStorage, automatically redirect to chat
-  useEffect(() => {
-    if (storedUser) {
-      router.push("/chat");
-    }
-  }, [storedUser, router]);
-
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     setError("");
 
     if (authMode === "register") {
-      if (!validateUsername(username)) {
-        setError(
-          "Username must be 3-20 characters long and contain only letters, numbers, and underscores"
-        );
-        return false;
-      }
-      if (!validateEmail(email)) {
-        setError("Invalid email address");
-        return false;
-      }
-      if (!validatePassword(password)) {
-        setError(
-          "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number"
-        );
-        return false;
-      }
-
-      try {
-        const success = await register(username, email, password);
-        if (success) {
-          router.push("/chat");
-          return true;
-        }
-        setError("Registration failed. Please try again.");
-        return false;
-      } catch (err) {
-        setError("Registration failed. Please try again.");
-        console.error("Error registering user:", err);
-        return false;
+      const success = register(username, email, password);
+      if (success) {
+        router.push("/chat");
+      } else {
+        setError("Registration failed. Please check your details.");
       }
     } else {
-      // Login mode
-      if (!validateUsername(username) && !validateEmail(email)) {
-        setError("Please enter a valid username or email");
-        return false;
-      }
-      if (!password) {
-        setError("Please enter your password");
-        return false;
-      }
-
-      try {
-        const success = await login(username, email, password);
-        if (success) {
-          router.push("/chat");
-          return true;
-        }
-        setError("Login failed. Please check your credentials and try again.");
-        return false;
-      } catch (err) {
-        setError("Login failed. Please check your credentials and try again.");
-        console.error("Error logging in:", err);
-        return false;
+      const success = login(identifier, password);
+      if (success) {
+        router.push("/chat");
+      } else {
+        setError("Login failed. Please check your credentials.");
       }
     }
   };
 
   const toggleAuthMode = () => {
     setAuthMode(authMode === "login" ? "register" : "login");
-    setUsername("");
+    // Reset form
+    setIdentifier("");
     setEmail("");
+    setUsername("");
     setPassword("");
     setError("");
   };
 
   return {
     authMode,
-    username,
-    setUsername,
+    identifier,
     email,
-    setEmail,
+    username,
     password,
-    setPassword,
     error,
+    setIdentifier,
+    setEmail,
+    setUsername,
+    setPassword,
     handleSubmit,
-    toggleAuthMode,
-    storedUser,
+    toggleAuthMode
   };
 };
