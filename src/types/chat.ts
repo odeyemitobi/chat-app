@@ -1,7 +1,8 @@
 export enum MessageType {
-  TEXT = 'text',
-  IMAGE = 'image',
-  FILE = 'file'
+  TEXT = "text",
+  IMAGE = "image",
+  FILE = "file",
+  EMOJI = "EMOJI",
 }
 
 export interface User {
