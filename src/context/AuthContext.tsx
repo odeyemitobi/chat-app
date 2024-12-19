@@ -1,16 +1,22 @@
-'use client';
+"use client";
 
-import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from "react";
 import { User } from "@/types/chat";
 import { UserStorage } from "@/lib/userStorage";
-import { 
-  validateUsername, 
-  validateEmail, 
+import {
+  validateUsername,
+  validateEmail,
   validatePassword,
-  hashPassword 
+  hashPassword,
 } from "@/lib/validation";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import Loader from '@/components/UI/Loader';
+import Loader from "@/components/UI/Loader";
 
 interface StoredUser extends User {
   hashedPassword: string;
@@ -31,7 +37,9 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {},
 });
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [, setStoredUser] = useLocalStorage<User | null>("currentUser", null);
@@ -45,7 +53,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(parsedUser);
       }
     } catch (error) {
-      console.error('Error reading from localStorage:', error);
+      console.error("Error reading from localStorage:", error);
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +64,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const foundUser = UserStorage.findUser(identifier, hashedPassword);
 
     if (foundUser) {
-      const { hashedPassword, ...safeUserData } = foundUser;
+      const { id, username, email, avatar } = foundUser;
+      const safeUserData = { id, username, email, avatar };
       setUser(safeUserData);
       setStoredUser(safeUserData);
       return true;
@@ -83,15 +92,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       id: `user_${Date.now().toString()}`,
       username,
       email,
-      avatar: '',
+      avatar: "",
       hashedPassword,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     const userAdded = UserStorage.addUser(newUser);
-    
+
     if (userAdded) {
-      const { hashedPassword, ...safeUserData } = newUser;
+      const { id, username: name, email: mail, avatar } = newUser;
+      const safeUserData = { id, username: name, email: mail, avatar };
       setUser(safeUserData);
       setStoredUser(safeUserData);
       return true;
