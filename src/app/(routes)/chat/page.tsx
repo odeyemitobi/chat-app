@@ -1,61 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import ChatBox from '@/components/ChatInterface/ChatBox';
-import { Message, MessageType } from '@/types/chat';
-import { socketService } from '@/lib/socket';
-import { useRouter } from 'next/navigation';
+import Loader from '@/components/UI/Loader';
+import { useChatMessages, useLogout } from './hooks';
 
 export default function ChatPage() {
-  const { user, logout } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const router = useRouter();
-
-  useEffect(() => {
-    socketService.connect('http://localhost:3000');
-    socketService.onMessage('chat_message', (data: unknown) => {
-      const newMessage = data as Message;
-      setMessages(prevMessages => [...prevMessages, newMessage]);
-    });
-    return () => {
-      socketService.disconnect();
-    };
-  }, []);
-
-  const handleSendMessage = (content: string, type: MessageType = MessageType.TEXT) => {
-    if (user) {
-      const newMessage: Message = {
-        id: `msg_${Date.now()}`,
-        content,
-        type,
-        user,
-        createdAt: new Date()
-      };
-      socketService.sendMessage('send_message', newMessage);
-      setMessages(prevMessages => [...prevMessages, newMessage]);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push('/');
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
-  };
+  const { user } = useAuth();
+  const { messages, sendMessage } = useChatMessages();
+  const { handleLogout } = useLogout();
 
   if (!user) {
-    return <div>Please log in to access the chat</div>;
+    return <Loader />;
   }
 
   return (
-    <div className="h-screen">
+    <div className="bg-gradient-to-br from-blue-100 to-purple-100">
       <ChatBox 
         user={user} 
         messages={messages} 
-        onSendMessage={handleSendMessage}
+        onSendMessage={sendMessage}
         onLogout={handleLogout}
       />
     </div>

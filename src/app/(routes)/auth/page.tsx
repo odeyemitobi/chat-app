@@ -6,6 +6,7 @@ import AnimatedBackground from "@/components/UI/Animated-Bg";
 import { FaRegUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
 import { BiLockAlt } from "react-icons/bi";
+import { FaEyeSlash, FaEye } from "react-icons/fa";
 
 export default function AuthPage() {
   const {
@@ -15,10 +16,12 @@ export default function AuthPage() {
     username,
     password,
     error,
+    showPassword,
     setIdentifier,
     setEmail,
     setUsername,
     setPassword,
+    setShowPassword,
     handleSubmit,
     toggleAuthMode,
   } = useAuthPage();
@@ -102,15 +105,23 @@ export default function AuthPage() {
               <BiLockAlt size={20} color="#9ca3af" />
             </div>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setPassword(e.target.value)
               }
-              className="w-full pl-10 pr-4 py-3 text-blue-500 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+              className="w-full pl-10 pr-12 py-3 text-blue-500 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
               placeholder="Enter your password"
               aria-label="Password"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+            </button>
           </div>
 
           <button

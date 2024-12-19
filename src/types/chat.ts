@@ -9,6 +9,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
+  avatar: string;
 }
 
 export interface Message {
@@ -17,4 +18,11 @@ export interface Message {
   type: MessageType;
   user: User;
   createdAt: Date;
+}
+
+export interface ChatBoxProps {
+  user: User;
+  messages: Message[];
+  onSendMessage: (content: string, type?: MessageType) => void;
+  onLogout: () => void;
 }

@@ -9,6 +9,7 @@ export const useAuthPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const { login, register } = useAuth();
   const router = useRouter();
@@ -50,10 +51,12 @@ export const useAuthPage = () => {
     username,
     password,
     error,
+    showPassword,
     setIdentifier,
     setEmail,
     setUsername,
     setPassword,
+    setShowPassword,
     handleSubmit,
     toggleAuthMode
   };

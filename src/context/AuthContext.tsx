@@ -10,6 +10,7 @@ import {
   hashPassword 
 } from "@/lib/validation";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import Loader from '@/components/UI/Loader';
 
 interface StoredUser extends User {
   hashedPassword: string;
@@ -31,14 +32,22 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [, setStoredUser] = useLocalStorage<User | null>("currentUser", null);
 
   // Check for existing logged-in user on mount
   useEffect(() => {
-    const storedCurrentUser = localStorage.getItem("currentUser");
-    if (storedCurrentUser) {
-      setUser(JSON.parse(storedCurrentUser));
+    try {
+      const storedCurrentUser = localStorage.getItem("currentUser");
+      if (storedCurrentUser) {
+        const parsedUser = JSON.parse(storedCurrentUser);
+        setUser(parsedUser);
+      }
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -47,7 +56,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const foundUser = UserStorage.findUser(identifier, hashedPassword);
 
     if (foundUser) {
-      // Remove sensitive data before setting user
       const { hashedPassword, ...safeUserData } = foundUser;
       setUser(safeUserData);
       setStoredUser(safeUserData);
@@ -61,7 +69,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     email: string,
     password: string
   ): boolean => {
-    // Validate inputs
     if (
       !validateUsername(username) ||
       !validateEmail(email) ||
@@ -76,15 +83,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       id: `user_${Date.now().toString()}`,
       username,
       email,
+      avatar: '',
       hashedPassword,
       createdAt: new Date().toISOString()
     };
 
-    // Attempt to add user to storage
     const userAdded = UserStorage.addUser(newUser);
     
     if (userAdded) {
-      // Remove sensitive data before setting user
       const { hashedPassword, ...safeUserData } = newUser;
       setUser(safeUserData);
       setStoredUser(safeUserData);
@@ -99,6 +105,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setStoredUser(null);
     localStorage.removeItem("currentUser");
   };
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <AuthContext.Provider value={{ user, login, register, logout }}>

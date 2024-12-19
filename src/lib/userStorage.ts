@@ -1,4 +1,3 @@
-// lib/userStorage.ts
 import { User } from "@/types/chat";
 
 interface StoredUser extends User {
@@ -9,23 +8,20 @@ interface StoredUser extends User {
 export class UserStorage {
   private static USERS_KEY = "chatapp_users";
 
-  // Get all stored users
   static getUsers(): StoredUser[] {
     const usersJson = localStorage.getItem(this.USERS_KEY);
     return usersJson ? JSON.parse(usersJson) : [];
   }
 
-  // Save a new user
   static addUser(user: StoredUser): boolean {
     const users = this.getUsers();
 
-    // Check if user already exists
     const existingUserIndex = users.findIndex(
       (u) => u.email === user.email || u.username === user.username
     );
 
     if (existingUserIndex !== -1) {
-      return false; // User already exists
+      return false;
     }
 
     users.push(user);
@@ -57,7 +53,6 @@ export class UserStorage {
     return true;
   }
 
-  // Delete a user (if needed)
   static deleteUser(userId: string): boolean {
     const users = this.getUsers();
     const filteredUsers = users.filter((u) => u.id !== userId);
