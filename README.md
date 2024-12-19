@@ -54,19 +54,14 @@ npm install
 yarn install
 ```
 
-3. Create a `.env.local` file in the root directory:
-```env
-NEXT_PUBLIC_API_URL=your_api_url_here
-```
-
-4. Run the development server:
+3. Run the development server:
 ```bash
 npm run dev
 # or
 yarn dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## 🎨 UI Components
 
